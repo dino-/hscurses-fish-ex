@@ -3,12 +3,12 @@
 {- Copyright 2010  Dino Morelli <dino@ui3.info>
    Released under BSD3
 
-   Simple curses aquarium written in Haskell to illustrate using 
+   Simple curses aquarium written in Haskell to learn about
    the hscurses library.
    Number of fish can be given as an argument, defaults to 20
 
    This code lives here:
-   http://ui3.info/d/????
+   http://ui3.info/darcs/hscurses-fish-ex/
 
    Inspired by this C code:
    http://alexeyt.freeshell.org/code/aquarium.c
