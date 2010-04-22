@@ -8,9 +8,10 @@ copyright:           2010 Dino Morelli
 author:              Dino Morelli
 maintainer:          Dino Morelli <dino@ui3.info>
 stability:           stable
-homepage:            ???
-synopsis:            Foo
-description:         Bar Baz
+homepage:            http://ui3.info/darcs/hscurses-fish-ex/
+synopsis:            hscurses swimming fish example
+description:         Simple curses aquarium written to learn about 
+                     the hscurses library.
 category:            Unknown
 tested-with:         GHC>=6.12.1
 
