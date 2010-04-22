@@ -12,7 +12,8 @@ homepage:            http://ui3.info/darcs/hscurses-fish-ex/
 synopsis:            hscurses swimming fish example
 description:         Simple curses aquarium written to learn about 
                      the hscurses library.
-category:            Unknown
+category:            Console, Development, Education, Help,
+                     User Interfaces
 tested-with:         GHC>=6.12.1
 
 executable           hscurses-fish-ex
