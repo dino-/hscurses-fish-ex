@@ -14,10 +14,11 @@
    http://alexeyt.freeshell.org/code/aquarium.c
 -}
 
+import Control.Arrow ( first )
 import Control.Concurrent ( threadDelay )
 import Control.Concurrent.MVar
    ( MVar, newMVar, putMVar, readMVar, takeMVar )
-import Control.Monad ( liftM, mplus, replicateM )
+import Control.Monad ( liftM, mplus, replicateM, zipWithM_ )
 import Data.Char ( ord )
 import Data.Maybe ( fromJust )
 import Safe ( headMay, readMay )
@@ -41,7 +42,10 @@ data Fish = Fish
    Int   -- x
    Pair  -- color
    Bool  -- fish is facing right
+   FishType
 
+data FishType = SmallFish | WideFish | HighFish | BigFish
+  deriving (Bounded, Enum)
 
 interruptHandler :: MVar Bool -> IO ()
 interruptHandler mvRunStatus = do
@@ -81,22 +85,24 @@ spawn = do
 
    y <- randomRIO (0, maxRows - 1)
    right <- randomRIO (True, False)
+   fishType <- liftM toEnum $ 
+      randomRIO (0, fromEnum (maxBound :: FishType))
    let x = case right of
-         True  -> -1
+         True  -> negate (fishTypeLen fishType)
          False -> maxCols
    color <- liftM Pair $ randomRIO (1, 7)
 
-   return $ Fish y x color right
+   return $ Fish y x color right fishType
 
 
 {- Returns a copy of a fish moved to a random column onscreen
    Used for first-time fish initialization
 -}
 randomXPos :: Fish -> IO Fish
-randomXPos (Fish y _ color right) = do
+randomXPos (Fish y _ color right t) = do
    maxCols <- liftM getWidth scrSize
    newX <- randomRIO (0, maxCols - 1)
-   return $ Fish y newX color right
+   return $ Fish y newX color right t
 
 
 {- Move a fish forward. If it's fully offscreen, spawn a random new 
@@ -105,48 +111,64 @@ randomXPos (Fish y _ color right) = do
 swim :: Fish -> IO Fish
 
 -- Right-facing fish
-swim (Fish y x color right@True) = do
-   let modFish = Fish y (x + 1) color right
+swim (Fish y x color right@True t) = do
+   let modFish = Fish y (x + 1) color right t
 
    maxCols <- liftM getWidth scrSize
-   if x > (maxCols + 2)
+   if x > maxCols - 2 + fishTypeLen t
       then spawn
       else return modFish
 
 -- Left-facing fish
-swim (Fish y x color right@False) = do
-   let modFish = Fish y (x - 1) color right
+swim (Fish y x color right@False t) = do
+   let modFish = Fish y (x - 1) color right t
 
-   if x < -3
+   if x < 1 - fishTypeLen t
       then spawn
       else return modFish
 
+fishTypeLen = maximum . map (length . snd) . fst . fishGfx
 
-{- Draw a fish
+{- Draw one line of a fish
    The reason for this complicated draw-each-char is that mvWAddStr
    crashes if part of the string is past the bottom right corner of 
    the window.
    Not so with calling mvAddCh even with out-of-bounds coords.
 -}
-drawPart :: Int -> (Int, Char) -> IO ()
-drawPart y (x, c) = do
-   mvAddCh y x $ fromIntegral . ord $ c
-
+drawFishLine :: Int -> (Int, String) -> IO ()
+drawFishLine y (x, s) = 
+   zipWithM_ (mvAddCh y) [x..] $ map (fromIntegral . ord) s
 
 drawFish :: Fish -> IO ()
-
--- Right-facing fish
-drawFish (Fish y x color True) = do
+drawFish (Fish y x color swimsRight t) = do
    attrSet attr0 color
-   mapM_ (drawPart y) $ zip [(x - 3) .. x] " ><>"
+   zipWithM_ drawFishLine [y..] . map (first (+ x)) .
+     (if swimsRight then fst else snd) $ fishGfx t
    wMove stdScr 0 0
 
--- Left-facing fish
-drawFish (Fish y x color False) = do
-   attrSet attr0 color
-   mapM_ (drawPart y) $ zip [x .. (x + 3)] "<>< "
-   wMove stdScr 0 0
-
+{- Give the ascii art lines and their horizontal offsets for a fish type.
+-}
+fishGfx :: FishType -> ([(Int, String)], [(Int, String)])
+fishGfx SmallFish = (,) [(0, " ><>")] [(0, "<>< ")]
+fishGfx WideFish = (,) [(0, " ><{{{*>")] [(0, "<*}}}>< ")]
+fishGfx HighFish = (,)
+   [(2,   " _"),
+    (0, " ><_>")]
+   [(1,  "_ "),
+    (0, "<_>< ")]
+fishGfx BigFish = (,)
+   [(7,        " \\:."),
+    (0, " \\;,   ,;\\\\\\,,"),
+    (1,  " \\\\\\;;:::::::o"),
+    (1,  " ///;;::::::::<"),
+    (1,  " /;' \"'/////''"),
+    (8,          " /;'")]
+   [(5,      ".:/ "),
+    (2,   ",,///;,   ,;/ "),
+    (1,  "o:::::::;;/// "),
+    (0, ">::::::::;;\\\\\\ "),
+    (1,  "''\\\\\\\\\\'\" ';\\ "),
+    (4,     "';\\ ")]
 
 {- Clear the screen by drawing spaces with the given color's background
 -}
