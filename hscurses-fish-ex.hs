@@ -101,6 +101,7 @@ worker mvRunStatus priorSchool = do
 
 
 -- Helper for spawn and swim. Compute length for a given fish type.
+fishTypeLen :: FishType -> Int
 fishTypeLen = maximum . map (length . snd) . fst . fishGfx
 
 
