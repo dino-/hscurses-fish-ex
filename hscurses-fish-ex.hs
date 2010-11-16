@@ -35,8 +35,9 @@ import UI.HSCurses.CursesHelper
 import UI.HSCurses.Widgets ( getWidth )
 
 
-{- The data needed to track each fish
--}
+data FishType = SmallFish | WideFish | HighFish | BigFish
+  deriving (Bounded, Enum)
+
 data Fish = Fish
    Int   -- y
    Int   -- x
@@ -44,8 +45,31 @@ data Fish = Fish
    Bool  -- fish is facing right
    FishType
 
-data FishType = SmallFish | WideFish | HighFish | BigFish
-  deriving (Bounded, Enum)
+
+{- Give the ascii art lines and their horizontal offsets for a fish type.
+-}
+fishGfx :: FishType -> ([(Int, String)], [(Int, String)])
+fishGfx SmallFish = (,) [(0, " ><>")] [(0, "<>< ")]
+fishGfx WideFish = (,) [(0, " ><{{{*>")] [(0, "<*}}}>< ")]
+fishGfx HighFish = (,)
+   [(2,   " _"),
+    (0, " ><_>")]
+   [(1,  "_ "),
+    (0, "<_>< ")]
+fishGfx BigFish = (,)
+   [(7,        " \\:."),
+    (0, " \\;,   ,;\\\\\\,,"),
+    (1,  " \\\\\\;;:::::::o"),
+    (1,  " ///;;::::::::<"),
+    (1,  " /;' \"'/////''"),
+    (8,          " /;'")]
+   [(5,      ".:/ "),
+    (2,   ",,///;,   ,;/ "),
+    (1,  "o:::::::;;/// "),
+    (0, ">::::::::;;\\\\\\ "),
+    (1,  "''\\\\\\\\\\'\" ';\\ "),
+    (4,     "';\\ ")]
+
 
 interruptHandler :: MVar Bool -> IO ()
 interruptHandler mvRunStatus = do
@@ -74,6 +98,10 @@ worker mvRunStatus priorSchool = do
    if stopNow == True
       then return ()
       else worker mvRunStatus school
+
+
+-- Helper for spawn and swim. Compute length for a given fish type.
+fishTypeLen = maximum . map (length . snd) . fst . fishGfx
 
 
 {- Construct a fish on a random row, facing a random direction
@@ -127,7 +155,6 @@ swim (Fish y x color right@False fishType) = do
       then spawn
       else return modFish
 
-fishTypeLen = maximum . map (length . snd) . fst . fishGfx
 
 {- Draw one line of a fish
    The reason for this complicated draw-each-char is that mvWAddStr
@@ -146,29 +173,6 @@ drawFish (Fish y x color swimsRight t) = do
      (if swimsRight then fst else snd) $ fishGfx t
    wMove stdScr 0 0
 
-{- Give the ascii art lines and their horizontal offsets for a fish type.
--}
-fishGfx :: FishType -> ([(Int, String)], [(Int, String)])
-fishGfx SmallFish = (,) [(0, " ><>")] [(0, "<>< ")]
-fishGfx WideFish = (,) [(0, " ><{{{*>")] [(0, "<*}}}>< ")]
-fishGfx HighFish = (,)
-   [(2,   " _"),
-    (0, " ><_>")]
-   [(1,  "_ "),
-    (0, "<_>< ")]
-fishGfx BigFish = (,)
-   [(7,        " \\:."),
-    (0, " \\;,   ,;\\\\\\,,"),
-    (1,  " \\\\\\;;:::::::o"),
-    (1,  " ///;;::::::::<"),
-    (1,  " /;' \"'/////''"),
-    (8,          " /;'")]
-   [(5,      ".:/ "),
-    (2,   ",,///;,   ,;/ "),
-    (1,  "o:::::::;;/// "),
-    (0, ">::::::::;;\\\\\\ "),
-    (1,  "''\\\\\\\\\\'\" ';\\ "),
-    (4,     "';\\ ")]
 
 {- Clear the screen by drawing spaces with the given color's background
 -}
