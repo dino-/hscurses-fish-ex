@@ -111,19 +111,19 @@ randomXPos (Fish y _ color right t) = do
 swim :: Fish -> IO Fish
 
 -- Right-facing fish
-swim (Fish y x color right@True t) = do
-   let modFish = Fish y (x + 1) color right t
+swim (Fish y x color right@True fishType) = do
+   let modFish = Fish y (x + 1) color right fishType
 
    maxCols <- liftM getWidth scrSize
-   if x > maxCols - 2 + fishTypeLen t
+   if x > maxCols - 2 + fishTypeLen fishType
       then spawn
       else return modFish
 
 -- Left-facing fish
-swim (Fish y x color right@False t) = do
-   let modFish = Fish y (x - 1) color right t
+swim (Fish y x color right@False fishType) = do
+   let modFish = Fish y (x - 1) color right fishType
 
-   if x < 1 - fishTypeLen t
+   if x < 1 - fishTypeLen fishType
       then spawn
       else return modFish
 
