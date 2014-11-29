@@ -16,6 +16,10 @@ category:            Console, Development, Education, Help,
                      User Interfaces
 tested-with:         GHC>=6.12.1
 
+source-repository    head
+   type:             darcs
+   location:         http://hub.darcs.net/dino/hscurses-fish-ex
+
 executable           hscurses-fish-ex
    main-is:          hscurses-fish-ex.hs
    build-depends:    base >= 3 && < 5, hscurses, random, safe, unix
