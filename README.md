@@ -19,8 +19,8 @@ Simple curses aquarium written to learn about the hscurses library.
 
 And once you have it, building the usual way:
 
->     $ cabal configure
->     $ cabal build
+    $ cabal configure
+    $ cabal build
 
 
 ## Contact
