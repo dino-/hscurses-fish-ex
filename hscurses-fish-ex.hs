@@ -1,7 +1,7 @@
 #! /usr/bin/env runhaskell
 
-{- Copyright 2010  Dino Morelli <dino@ui3.info>
-   Released under BSD3
+{- Copyright 2010-2018  Dino Morelli <dino@ui3.info>
+   Released under ISC
 
    Simple curses aquarium written in Haskell to learn about
    the hscurses library.
