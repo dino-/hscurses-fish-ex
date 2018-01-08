@@ -1,5 +1,3 @@
-#! /usr/bin/env runhaskell
-
 {- Copyright 2010-2018  Dino Morelli <dino@ui3.info>
    Released under ISC
 
